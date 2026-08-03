@@ -1,5 +1,6 @@
 package com.Mipdv.api_consulta_cnj.business.service;
 
+import com.Mipdv.api_consulta_cnj.infrastructure.Client.CnjClient;
 import com.Mipdv.api_consulta_cnj.infrastructure.entity.Processo;
 import com.Mipdv.api_consulta_cnj.infrastructure.exceptions.ConflictException;
 import com.Mipdv.api_consulta_cnj.infrastructure.repository.processoRepository;
