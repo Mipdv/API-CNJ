@@ -11,6 +11,7 @@ import com.Mipdv.api_consulta_cnj.infrastructure.exceptions.ConflictException;
 import com.Mipdv.api_consulta_cnj.infrastructure.repository.assuntoRepository;
 import com.Mipdv.api_consulta_cnj.infrastructure.repository.processoRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,6 +28,17 @@ public class ProcessoService {
     private final CnjClient cnjClient;
 
     public ProcessoDTOResponse consultarProcesso(String tribunal, String numero) {
+
+        if (numero == null || numero.length() != 20) {
+
+            try {
+                throw new BadRequestException("Número do processo inválido.");
+            } catch (BadRequestException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
         Optional<Processo> cache = processoRepository.findByNumeroProcesso(numero);
 
         if (cache.isPresent()) {
@@ -100,7 +112,7 @@ public class ProcessoService {
                         .orElseGet(() -> {
                             Assunto novo = new Assunto();
                             novo.setNome(a.getNome());
-                            return novo;
+                            return assuntoRepository.save(novo);
                         }))
                 .collect(Collectors.toList());
     }
