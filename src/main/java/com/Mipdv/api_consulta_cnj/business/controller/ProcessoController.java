@@ -13,11 +13,10 @@ public class ProcessoController {
 
     private final ProcessoService processoService;
 
-    @PostMapping("/{tribunal}/{numero}")
+    @PostMapping("/{numero}")
     public ResponseEntity<ProcessoDTOResponse> consultarProcesso(
-            @PathVariable String tribunal,
             @PathVariable String numero) {
-        return ResponseEntity.ok(processoService.consultarProcesso(tribunal, numero));
+        return ResponseEntity.ok(processoService.consultarProcesso(numero));
         //
     }
 }

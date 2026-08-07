@@ -10,11 +10,13 @@ import com.Mipdv.api_consulta_cnj.infrastructure.entity.Processo;
 import com.Mipdv.api_consulta_cnj.infrastructure.exceptions.ConflictException;
 import com.Mipdv.api_consulta_cnj.infrastructure.repository.assuntoRepository;
 import com.Mipdv.api_consulta_cnj.infrastructure.repository.processoRepository;
+import com.Mipdv.api_consulta_cnj.infrastructure.util.TribunalResolver;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,11 +28,12 @@ public class ProcessoService {
     private final processoRepository processoRepository;
     private final assuntoRepository assuntoRepository;
     private final CnjClient cnjClient;
+    private final TribunalResolver tribunalResolver;
 
-    public ProcessoDTOResponse consultarProcesso(String tribunal, String numero) {
 
+
+    public ProcessoDTOResponse consultarProcesso(String numero) {
         if (numero == null || numero.length() != 20) {
-
             try {
                 throw new BadRequestException("Número do processo inválido.");
             } catch (BadRequestException e) {
@@ -38,6 +41,7 @@ public class ProcessoService {
             }
 
         }
+        String tribunal = tribunalResolver.resolver(numero);
 
         Optional<Processo> cache = processoRepository.findByNumeroProcesso(numero);
 
@@ -101,34 +105,45 @@ public class ProcessoService {
             processo.setClasseNome(dto.getClasse().getNome());
         }
 
-        processo.setAssuntos(converterAssuntos(dto.getAssuntos()));
-        processo.setMovimentos(converterMovimentos(dto.getMovimentos(), processo));
+        atualizarAssuntos(processo, dto.getAssuntos());
+        atualizarMovimentos(processo, dto.getMovimentos());
     }
 
-    private List<Assunto> converterAssuntos(List<AssuntoCnjDTO> assuntosDto) {
-        if (assuntosDto == null) return List.of();
-        return assuntosDto.stream()
-                .map(a -> assuntoRepository.findByNome(a.getNome())
+    private void atualizarMovimentos(Processo processo, List<MovimentoCnjDTO> movimentosDto) {
+        if (processo.getMovimentos() == null) {
+            processo.setMovimentos(new ArrayList<>());
+        }
+        processo.getMovimentos().clear();
+
+        if (movimentosDto != null) {
+            for (MovimentoCnjDTO m : movimentosDto) {
+                Movimento mov = new Movimento();
+                mov.setCodigo(m.getCodigo());
+                mov.setNome(m.getNome());
+                mov.setDataHora(m.getDataHora());
+                mov.setProcesso(processo);
+                processo.getMovimentos().add(mov);
+            }
+        }
+    }
+
+    private void atualizarAssuntos(Processo processo, List<AssuntoCnjDTO> assuntosDto) {
+        if (processo.getAssuntos() == null) {
+            processo.setAssuntos(new ArrayList<>());
+        }
+        processo.getAssuntos().clear();
+
+        if (assuntosDto != null) {
+            for (AssuntoCnjDTO a : assuntosDto) {
+                Assunto assunto = assuntoRepository.findByNome(a.getNome())
                         .orElseGet(() -> {
                             Assunto novo = new Assunto();
                             novo.setNome(a.getNome());
                             return assuntoRepository.save(novo);
-                        }))
-                .collect(Collectors.toList());
-    }
-
-    private List<Movimento> converterMovimentos(List<MovimentoCnjDTO> movimentosDto, Processo processo) {
-        if (movimentosDto == null) return List.of();
-        return movimentosDto.stream()
-                .map(m -> {
-                    Movimento mov = new Movimento();
-                    mov.setCodigo(m.getCodigo());
-                    mov.setNome(m.getNome());
-                    mov.setDataHora(m.getDataHora());
-                    mov.setProcesso(processo);
-                    return mov;
-                })
-                .collect(Collectors.toList());
+                        });
+                processo.getAssuntos().add(assunto);
+            }
+        }
     }
 
     private ProcessoDTOResponse converterParaResponse(Processo processo) {
