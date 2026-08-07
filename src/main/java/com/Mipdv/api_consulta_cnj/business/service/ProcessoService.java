@@ -31,25 +31,6 @@ public class ProcessoService {
     private final TribunalResolver tribunalResolver;
 
 
-//    public ProcessoDTOResponse consultarProcesso(String tribunal, String numero) {
-//
-//        if (numero == null || numero.length() != 20) {
-//
-//            try {
-//                throw new BadRequestException("Número do processo inválido.");
-//            } catch (BadRequestException e) {
-//                throw new RuntimeException(e);
-//            }
-//
-//        }
-//
-//        if(!numero.matches("\\d{20}")){
-//            try {
-//                throw new BadRequestException("Numero do processo deve conter apenas 20 dígitos");
-//            } catch (BadRequestException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
 
     public ProcessoDTOResponse consultarProcesso(String numero) {
         if (numero == null || numero.length() != 20) {
