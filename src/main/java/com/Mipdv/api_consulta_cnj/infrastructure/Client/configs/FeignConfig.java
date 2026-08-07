@@ -13,9 +13,8 @@ public class FeignConfig {
 
     @Bean
     public RequestInterceptor requestInterceptor(){
+        //Colocar um try/catch com UnauthorizedException
         return requestTemplate -> {
-
-            System.out.println("TOKEN ENVIADO: " + apiKey);
             requestTemplate.header(
                     "Authorization", "APIKey " + apiKey
             );
@@ -24,6 +23,11 @@ public class FeignConfig {
                     "application/json"
             );
         };
+    }
+
+    @Bean
+    public FeignError feignError(){
+        return new FeignError();
     }
 
 }
