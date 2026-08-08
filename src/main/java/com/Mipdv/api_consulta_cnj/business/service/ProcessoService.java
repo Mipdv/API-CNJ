@@ -10,9 +10,11 @@ import com.Mipdv.api_consulta_cnj.infrastructure.entity.Processo;
 import com.Mipdv.api_consulta_cnj.infrastructure.exceptions.ConflictException;
 import com.Mipdv.api_consulta_cnj.infrastructure.repository.assuntoRepository;
 import com.Mipdv.api_consulta_cnj.infrastructure.repository.processoRepository;
+import com.Mipdv.api_consulta_cnj.infrastructure.util.DataUtil;
+import com.Mipdv.api_consulta_cnj.infrastructure.util.TribunalInfo;
 import com.Mipdv.api_consulta_cnj.infrastructure.util.TribunalResolver;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
+import com.Mipdv.api_consulta_cnj.infrastructure.exceptions.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -41,7 +43,9 @@ public class ProcessoService {
             }
 
         }
-        String tribunal = tribunalResolver.resolver(numero);
+        TribunalInfo tribunalInfo = tribunalResolver.resolver(numero);
+        String tribunal = tribunalInfo.alias();
+        String estado = tribunalInfo.estado();
 
         Optional<Processo> cache = processoRepository.findByNumeroProcesso(numero);
 
@@ -52,12 +56,12 @@ public class ProcessoService {
                 return converterParaResponse(processo);
             }
             ProcessoCnjDTO dto = consultarApiCnj(tribunal, numero);
-            atualizarEntity(processo, dto);
+            atualizarEntity(processo, dto ,estado);
             return converterParaResponse(salvarConsulta(processo));
         }
 
         ProcessoCnjDTO dto = consultarApiCnj(tribunal, numero);
-        Processo processo = converterParaEntity(dto);
+        Processo processo = converterParaEntity(dto , estado);
         return converterParaResponse(salvarConsulta(processo));
     }
 
@@ -83,19 +87,21 @@ public class ProcessoService {
         }
     }
 
-    private Processo converterParaEntity(ProcessoCnjDTO dto) {
+    private Processo converterParaEntity(ProcessoCnjDTO dto, String estado) {
         Processo processo = new Processo();
-        preencherCamposComuns(processo, dto);
+        preencherCamposComuns(processo, dto, estado);
         return processo;
     }
 
-    private void atualizarEntity(Processo processo, ProcessoCnjDTO dto) {
-        preencherCamposComuns(processo, dto);
+    private void atualizarEntity(Processo processo, ProcessoCnjDTO dto, String estado) {
+        preencherCamposComuns(processo, dto , estado);
     }
 
-    private void preencherCamposComuns(Processo processo, ProcessoCnjDTO dto) {
+    private void preencherCamposComuns(Processo processo, ProcessoCnjDTO dto , String estado
+    ) {
         processo.setNumeroProcesso(dto.getNumeroProcesso());
         processo.setTribunal(dto.getTribunal());
+        processo.setEstado(estado);
         processo.setGrau(dto.getGrau());
         processo.setDataAjuizamento(dto.getDataAjuizamento());
         processo.setUltimaAtualizacao(dto.getDataHoraUltimaAtualizacao());
@@ -149,14 +155,18 @@ public class ProcessoService {
     private ProcessoDTOResponse converterParaResponse(Processo processo) {
         return ProcessoDTOResponse.builder()
                 .numeroProcesso(processo.getNumeroProcesso())
+                .dataAjuizamento(DataUtil.formartarDataBruta(processo.getDataAjuizamento()))
                 .tribunal(processo.getTribunal())
+                .grau(processo.getGrau())
+                .estado(processo.getEstado())
                 .classeNome(processo.getClasseNome())
-                .ultimaAtualizacao(processo.getUltimaAtualizacao())
+                .ultimaAtualizacao(DataUtil.formatarDataIso(processo.getUltimaAtualizacao()))
                 .assuntos(processo.getAssuntos().stream()
                         .map(a -> new AssuntoDTOResponse(a.getNome()))
                         .collect(Collectors.toList()))
                 .movimentos(processo.getMovimentos().stream()
-                        .map(m -> new MovimentoDTOResponse(m.getNome(), m.getDataHora()))
+                        .map(m -> new MovimentoDTOResponse(m.getNome(), DataUtil.formatarDataIso
+                                (m.getDataHora())))
                         .collect(Collectors.toList()))
                 .build();
     }
