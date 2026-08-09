@@ -26,6 +26,8 @@ public class Processo {
     private String grau;
     @Column(name = "tribunal", length = 10)
     private String tribunal;
+    @Column(name = "Estado", length = 2)
+    private String estado;
     @Column(name = "Sigilo")
     private String sigilo;
     @Column(name = "data_ajuizamento")

@@ -4,6 +4,6 @@ import lombok.*;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class MovimentoDTOResponse {
-    private String nome;
+    private String nomeDoAto;
     private String dataHora;
 }
