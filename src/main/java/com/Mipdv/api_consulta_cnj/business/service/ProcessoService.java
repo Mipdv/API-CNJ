@@ -97,8 +97,7 @@ public class ProcessoService {
         preencherCamposComuns(processo, dto , estado);
     }
 
-    private void preencherCamposComuns(Processo processo, ProcessoCnjDTO dto , String estado
-    ) {
+    private void preencherCamposComuns(Processo processo, ProcessoCnjDTO dto , String estado) {
         processo.setNumeroProcesso(dto.getNumeroProcesso());
         processo.setTribunal(dto.getTribunal());
         processo.setEstado(estado);
@@ -109,6 +108,10 @@ public class ProcessoService {
         if (dto.getClasse() != null) {
             processo.setCodigo(dto.getClasse().getCodigo());
             processo.setClasseNome(dto.getClasse().getNome());
+        }
+
+        if(dto.getSistema() != null){
+            processo.setSistemaNome(dto.getSistema().getNome());
         }
 
         atualizarAssuntos(processo, dto.getAssuntos());
@@ -158,8 +161,9 @@ public class ProcessoService {
                 .dataAjuizamento(DataUtil.formartarDataBruta(processo.getDataAjuizamento()))
                 .tribunal(processo.getTribunal())
                 .grau(processo.getGrau())
+                .sistema(processo.getSistemaNome())//Pega a entity
                 .estado(processo.getEstado())
-                .classeNome(processo.getClasseNome())
+                .TipoDaAcao(processo.getClasseNome())
                 .ultimaAtualizacao(DataUtil.formatarDataIso(processo.getUltimaAtualizacao()))
                 .assuntos(processo.getAssuntos().stream()
                         .map(a -> new AssuntoDTOResponse(a.getNome()))
