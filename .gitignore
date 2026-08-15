@@ -33,3 +33,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Frontend ###
+src/main/resources/static/index.html
+src/main/resources/static/script.js
+src/main/resources/static/style.css
+src/main/resources/static/img/

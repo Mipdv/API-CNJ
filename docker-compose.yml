@@ -7,6 +7,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/api_cnj
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-postgres}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      CNJ_API_TOKEN: ${CNJ_API_TOKEN}
     depends_on:
       - postgres
 
@@ -16,5 +17,6 @@ services:
       POSTGRES_DB: api_cnj
       POSTGRES_USER: ${DB_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+      CNJ_API_TOKEN: ${CNJ_API_TOKEN}
     ports:
       - "5433:5432"

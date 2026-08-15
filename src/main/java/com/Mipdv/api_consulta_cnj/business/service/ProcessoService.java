@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -163,12 +164,14 @@ public class ProcessoService {
                 .grau(processo.getGrau())
                 .sistema(processo.getSistemaNome())//Pega a entity
                 .estado(processo.getEstado())
-                .TipoDaAcao(processo.getClasseNome())
+                .tipoDaAcao(processo.getClasseNome())
                 .ultimaAtualizacao(DataUtil.formatarDataIso(processo.getUltimaAtualizacao()))
                 .assuntos(processo.getAssuntos().stream()
                         .map(a -> new AssuntoDTOResponse(a.getNome()))
                         .collect(Collectors.toList()))
-                .movimentos(processo.getMovimentos().stream()
+                        .movimentos(processo.getMovimentos().stream()
+                        .sorted(Comparator.comparing(Movimento::getDataHora,
+                                        Comparator.nullsLast(Comparator.reverseOrder())))
                         .map(m -> new MovimentoDTOResponse(m.getNome(), DataUtil.formatarDataIso
                                 (m.getDataHora())))
                         .collect(Collectors.toList()))
