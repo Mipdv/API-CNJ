@@ -1,0 +1,294 @@
+:root {
+  --ink: #1B2A41;
+  --ink-soft: #2E4258;
+  --paper: #FAF9F6;
+  --paper-raised: #FFFFFF;
+  --slate: #5B6B7C;
+  --brass: #A9803D;
+  --brass-soft: #E9DCC3;
+  --hairline: #DCD6C9;
+  --alert: #9B3B34;
+  --ok: #2F6F4F;
+  --radius: 3px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 24px 96px;
+}
+
+header.site {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 18px;
+  margin-bottom: 40px;
+}
+
+header.site .mark {
+  font-family: 'Source Serif 4', serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.01em;
+}
+
+header.site .mark span { color: var(--brass); }
+
+header.site .tag {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+
+/* Busca */
+.search-panel {
+  background: var(--paper-raised);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 32px;
+}
+
+.search-panel label {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--slate);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.search-row {
+  display: flex;
+  gap: 10px;
+}
+
+input#numero {
+  flex: 1;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
+  letter-spacing: 0.03em;
+  padding: 14px 16px;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+input#numero:focus {
+  outline: none;
+  border-color: var(--brass);
+  box-shadow: 0 0 0 3px var(--brass-soft);
+}
+
+input#numero::placeholder { color: #A7ADB4; letter-spacing: 0.02em; }
+
+button.primary {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 0 26px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+button.primary:hover { background: var(--ink-soft); }
+button.primary:disabled { background: #B7BEC6; cursor: not-allowed; }
+
+.hint { font-size: 12.5px; color: var(--slate); margin-top: 10px; }
+
+/* Estados */
+.state-box {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--slate);
+  font-size: 14px;
+}
+
+.state-box.error { color: var(--alert); }
+
+/* Resultado */
+#resultado { display: none; }
+
+.capa {
+  background: var(--paper-raised);
+  border: 1px solid var(--hairline);
+  border-top: 4px solid var(--brass);
+  border-radius: var(--radius);
+  padding: 32px;
+}
+
+.capa .numero {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+
+.capa .classe {
+  font-family: 'Source Serif 4', serif;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 24px;
+  color: var(--ink);
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: 24px;
+}
+
+.meta-item .label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--slate);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.meta-item .value { font-size: 14.5px; color: var(--ink); }
+
+.section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--brass);
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+
+.assuntos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 30px;
+}
+
+.assunto-chip {
+  font-size: 13px;
+  background: var(--brass-soft);
+  color: #6B4E1E;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.empty-note { font-size: 13.5px; color: var(--slate); font-style: italic; }
+
+/* Movimentos */
+.movimentos-list { list-style: none; margin: 0; padding: 0; }
+
+.movimento-item {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.movimento-item:last-child { border-bottom: none; }
+
+.movimento-item .data {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--slate);
+  padding-top: 2px;
+}
+
+.movimento-item .nome { font-size: 14px; line-height: 1.45; }
+
+/* Paginação estilo "fls." */
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--hairline);
+}
+
+.fls-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  background: none;
+  border: 1px solid var(--hairline);
+  color: var(--slate);
+  width: 34px;
+  height: 30px;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.fls-btn.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+  font-weight: 600;
+}
+
+.fls-btn:hover:not(.active):not(:disabled) { border-color: var(--brass); color: var(--brass); }
+.fls-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.fls-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--slate);
+  margin-right: 8px;
+}
+
+/* Rodapé de ações */
+.acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+button.secondary {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  background: var(--paper-raised);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+button.secondary:hover { background: var(--ink); color: var(--paper); }
+
+/* Área exclusiva de impressão de PDF (lista completa, sem paginação) */
+#pdf-source { position: absolute; left: -9999px; top: 0; width: 700px; }
+#pdf-source .capa { border-top: 4px solid var(--brass); }
+
+@media (max-width: 560px) {
+  .search-row { flex-direction: column; }
+  button.primary { padding: 14px; }
+  .meta-grid { grid-template-columns: 1fr 1fr; }
+}

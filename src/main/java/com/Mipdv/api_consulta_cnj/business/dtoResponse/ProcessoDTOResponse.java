@@ -12,7 +12,7 @@ public class ProcessoDTOResponse {
     private String grau;
     private String sistema;
     private String estado;
-    private String TipoDaAcao;//classeNome
+    private String tipoDaAcao;//classeNome
     private String ultimaAtualizacao;
     private List<AssuntoDTOResponse> assuntos;
     private List<MovimentoDTOResponse> movimentos;
