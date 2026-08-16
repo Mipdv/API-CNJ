@@ -36,19 +36,12 @@ public class ProcessoService {
 
 
     public ProcessoDTOResponse consultarProcesso(String numero) {
-        if (numero == null || numero.length() != 20) {
-            try {
-                throw new BadRequestException("Número do processo inválido.");
-            } catch (BadRequestException e) {
-                throw new RuntimeException(e);
-            }
-
-        }
         TribunalInfo tribunalInfo = tribunalResolver.resolver(numero);
         String tribunal = tribunalInfo.alias();
         String estado = tribunalInfo.estado();
+        String numeroLimpo = numero.replaceAll("[^0-9]", "");
 
-        Optional<Processo> cache = processoRepository.findByNumeroProcesso(numero);
+        Optional<Processo> cache = processoRepository.findByNumeroProcesso(numeroLimpo);
 
         if (cache.isPresent()) {
             Processo processo = cache.get();
@@ -56,12 +49,12 @@ public class ProcessoService {
                     processo.getDataConsulta().isAfter(LocalDateTime.now().minusHours(24))) {
                 return converterParaResponse(processo);
             }
-            ProcessoCnjDTO dto = consultarApiCnj(tribunal, numero);
+            ProcessoCnjDTO dto = consultarApiCnj(tribunal, numeroLimpo);
             atualizarEntity(processo, dto ,estado);
             return converterParaResponse(salvarConsulta(processo));
         }
 
-        ProcessoCnjDTO dto = consultarApiCnj(tribunal, numero);
+        ProcessoCnjDTO dto = consultarApiCnj(tribunal, numeroLimpo);
         Processo processo = converterParaEntity(dto , estado);
         return converterParaResponse(salvarConsulta(processo));
     }
