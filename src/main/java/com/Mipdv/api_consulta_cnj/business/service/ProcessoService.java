@@ -14,7 +14,6 @@ import com.Mipdv.api_consulta_cnj.infrastructure.util.DataUtil;
 import com.Mipdv.api_consulta_cnj.infrastructure.util.TribunalInfo;
 import com.Mipdv.api_consulta_cnj.infrastructure.util.TribunalResolver;
 import lombok.RequiredArgsConstructor;
-import com.Mipdv.api_consulta_cnj.infrastructure.exceptions.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
