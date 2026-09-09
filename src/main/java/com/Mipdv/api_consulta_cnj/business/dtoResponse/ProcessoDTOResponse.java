@@ -3,7 +3,7 @@ package com.Mipdv.api_consulta_cnj.business.dtoResponse;
 import lombok.*;
 import java.util.List;
 
-//JSON Response
+//JSON Response api
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class ProcessoDTOResponse {
     private String numeroProcesso;

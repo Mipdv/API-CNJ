@@ -5,7 +5,9 @@ import com.Mipdv.api_consulta_cnj.api.response.*;
 import com.Mipdv.api_consulta_cnj.business.dtoResponse.ProcessoDTOResponse;
 import com.Mipdv.api_consulta_cnj.business.service.ProcessoService;
 import com.Mipdv.api_consulta_cnj.infrastructure.Client.CnjClient;
+import com.Mipdv.api_consulta_cnj.infrastructure.dtoRequest.ProcessoDTORequest;
 import com.Mipdv.api_consulta_cnj.infrastructure.dtoResponse.*;
+import com.Mipdv.api_consulta_cnj.infrastructure.entity.Assunto;
 import com.Mipdv.api_consulta_cnj.infrastructure.entity.Processo;
 import com.Mipdv.api_consulta_cnj.infrastructure.exceptions.ConflictException;
 import com.Mipdv.api_consulta_cnj.infrastructure.repository.assuntoRepository;
@@ -50,6 +52,7 @@ public class ProcessoServiceTeste {
     private Processo processo;
     private HitDTO hitDTO;
     private HitsWrapperDTO hitsWrapperDTO;
+    private AssuntoCnjDTO assuntoCnjDTO;
     String numeroBruto;
     String numeroLimpo;
 
@@ -102,7 +105,8 @@ public class ProcessoServiceTeste {
         when(tribunalResolver.resolver(anyString())).thenReturn(tribunalInfo);
         when(processoRepository.findByNumeroProcesso(numeroLimpo)).thenReturn(
                 Optional.empty());
-        when(cnjClient.consultar(anyString(),any())).thenReturn(dataJudResponseDTO);
+        //Deixei explicito o ProcessoDTORequest.class para legibilidade.
+        when(cnjClient.consultar(anyString(),any(ProcessoDTORequest.class))).thenReturn(dataJudResponseDTO);
         when(processoRepository.save(any(Processo.class))).thenAnswer(invocation ->
                 invocation.getArgument(0));
 
@@ -172,5 +176,93 @@ public class ProcessoServiceTeste {
         when(cnjClient.consultar(anyString(),any())).thenThrow(new RuntimeException("timeout"));
         assertThrows(ConflictException.class, () -> processoService.consultarProcesso(numeroBruto));
         verify(processoRepository,never()).save(any());
+    }
+
+    @Test
+    void deveRetornarAssuntoJáExistente(){
+        assuntoCnjDTO = new AssuntoCnjDTOFixture().build(1, "Direito Civil");
+        processoCnjDTO = new ProcessoCnjDTOFixture().build(numeroLimpo,
+                "trf5", null, "1", new SistemaDTOFixture().build(1, "PJe"),
+                new ClasseDTOFixture().build(198, "Procedimento Comum"), null,
+                new ArrayList<>(List.of(assuntoCnjDTO)), new ArrayList<>(), "2024-01-10T09:00:00.000Z",
+                "2023-08-15T10:00:00.000Z");
+        hitDTO = new HitDTOFixture().build("hit-1", processoCnjDTO);
+        hitsWrapperDTO = new HitsWrapperDTOFixture().build(new ArrayList<>(List.of(hitDTO)));
+        dataJudResponseDTO = new DataJudResponseDTOFixture().build(2350L, hitsWrapperDTO);
+        Assunto assunto = new AssuntoFixture().build(1L, "Direito Civil", new ArrayList<>());
+        when(tribunalResolver.resolver(anyString())).thenReturn(tribunalInfo);
+        processo.setDataConsulta(LocalDateTime.now().minusHours(25));
+        when(processoRepository.findByNumeroProcesso(numeroLimpo)).thenReturn(Optional.of(processo));
+        when(processoRepository.save(processo)).thenReturn(processo);
+        when(cnjClient.consultar(anyString(),any())).thenReturn(dataJudResponseDTO);
+        when(assuntoRepository.findByNome(assuntoCnjDTO.getNome())).thenReturn(Optional.of(assunto));
+
+        ProcessoDTOResponse response = processoService.consultarProcesso(numeroBruto);
+
+        assertNotNull(response);
+        verify(cnjClient, times(1)).consultar(anyString(), any());
+        assertEquals("Direito Civil", response.getAssuntos().get(0).getNome());
+        verify(assuntoRepository,never()).save(any());
+    }
+    @Test
+    void deveCriarAssuntoNaoExistente(){
+        processo.setDataConsulta(LocalDateTime.now().minusHours(25));
+        assuntoCnjDTO = new AssuntoCnjDTOFixture().build(1, "Direito Civil");
+        processoCnjDTO = new ProcessoCnjDTOFixture().build(numeroLimpo,
+                "trf5", null, "1", new SistemaDTOFixture().build(1, "PJe"),
+                new ClasseDTOFixture().build(198, "Procedimento Comum"), null,
+                new ArrayList<>(List.of(assuntoCnjDTO)), new ArrayList<>(), "2024-01-10T09:00:00.000Z",
+                "2023-08-15T10:00:00.000Z");
+        hitDTO = new HitDTOFixture().build("hit-1", processoCnjDTO);
+        hitsWrapperDTO = new HitsWrapperDTOFixture().build(new ArrayList<>(List.of(hitDTO)));
+        dataJudResponseDTO = new DataJudResponseDTOFixture().build(2350L, hitsWrapperDTO);
+        Assunto assunto = new AssuntoFixture().build(1L, "Direito Civil", new ArrayList<>());
+        when(assuntoRepository.findByNome(assuntoCnjDTO.getNome())).thenReturn(Optional.empty());
+        //assunto é o criado via fixture.
+        when(assuntoRepository.save(any(Assunto.class))).thenAnswer//Assunto.class = novo da service
+                (invocation -> invocation.getArgument(0));
+        when(tribunalResolver.resolver(anyString())).thenReturn(tribunalInfo);
+        processo.setDataConsulta(LocalDateTime.now().minusHours(25));
+        when(processoRepository.findByNumeroProcesso(numeroLimpo)).thenReturn(Optional.of(processo));
+        when(processoRepository.save(any(Processo.class))).thenAnswer(invocation ->
+                invocation.getArgument(0));
+        when(cnjClient.consultar(anyString(),any())).thenReturn(dataJudResponseDTO);
+
+        ProcessoDTOResponse response = processoService.consultarProcesso(numeroBruto);
+
+        assertNotNull(response);
+        verify(cnjClient, times(1)).consultar(anyString(), any());
+        assertEquals("Direito Civil", response.getAssuntos().get(0).getNome());
+        //any(Assunto.class) - utilizei para legibilidade.
+        verify(assuntoRepository,times(1)).save(any(Assunto.class));
+    }
+
+    @Test
+    void deveSubstituirOAssuntoAnterior(){
+        processo.setDataConsulta(LocalDateTime.now().minusHours(25));
+        Assunto assunto = new AssuntoFixture().build(2L, "Direito Penal", new ArrayList<>());
+        processo.setAssuntos(new ArrayList<>(List.of(assunto)));
+        assuntoCnjDTO = new AssuntoCnjDTOFixture().build(1, "Direito Civil");
+        processoCnjDTO = new ProcessoCnjDTOFixture().build(numeroLimpo,
+                "trf5", null, "1", new SistemaDTOFixture().build(1, "PJe"),
+                new ClasseDTOFixture().build(198, "Procedimento Comum"), null,
+                new ArrayList<>(List.of(assuntoCnjDTO)), new ArrayList<>(), "2024-01-10T09:00:00.000Z",
+                "2023-08-15T10:00:00.000Z");
+        hitDTO = new HitDTOFixture().build("hit-1", processoCnjDTO);
+        hitsWrapperDTO = new HitsWrapperDTOFixture().build(new ArrayList<>(List.of(hitDTO)));
+        dataJudResponseDTO = new DataJudResponseDTOFixture().build(2350L, hitsWrapperDTO);
+        when(assuntoRepository.findByNome(assuntoCnjDTO.getNome())).thenReturn(Optional.empty());
+        when(tribunalResolver.resolver(anyString())).thenReturn(tribunalInfo);
+        when(processoRepository.save(processo)).thenReturn(processo);
+        when(processoRepository.findByNumeroProcesso(numeroLimpo)).thenReturn(Optional.of(processo));
+        when(cnjClient.consultar(anyString(), any())).thenReturn(dataJudResponseDTO);
+
+        ProcessoDTOResponse response = processoService.consultarProcesso(numeroBruto);
+
+        assertNotNull(response);
+        assertEquals(1, response.getAssuntos().size());
+        assertEquals("Direito Civil", response.getAssuntos().get(0).getNome());
+
+
     }
 }

@@ -9,6 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+//Response Cnj
 public class ProcessoCnjDTO {
     private String numeroProcesso;
     private String tribunal;
