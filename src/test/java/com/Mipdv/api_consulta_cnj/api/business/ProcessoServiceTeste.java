@@ -251,7 +251,8 @@ public class ProcessoServiceTeste {
         hitDTO = new HitDTOFixture().build("hit-1", processoCnjDTO);
         hitsWrapperDTO = new HitsWrapperDTOFixture().build(new ArrayList<>(List.of(hitDTO)));
         dataJudResponseDTO = new DataJudResponseDTOFixture().build(2350L, hitsWrapperDTO);
-        when(assuntoRepository.findByNome(assuntoCnjDTO.getNome())).thenReturn(Optional.empty());
+        when(assuntoRepository.findByNome(assuntoCnjDTO.getNome())).thenReturn(Optional.empty());//Cai no orElseGet() - se não cair, não chama o próximo stub do .save
+        when(assuntoRepository.save(any(Assunto.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(tribunalResolver.resolver(anyString())).thenReturn(tribunalInfo);
         when(processoRepository.save(processo)).thenReturn(processo);
         when(processoRepository.findByNumeroProcesso(numeroLimpo)).thenReturn(Optional.of(processo));
@@ -260,9 +261,8 @@ public class ProcessoServiceTeste {
         ProcessoDTOResponse response = processoService.consultarProcesso(numeroBruto);
 
         assertNotNull(response);
-        assertEquals(1, response.getAssuntos().size());
-        assertEquals("Direito Civil", response.getAssuntos().get(0).getNome());
-
-
+        assertEquals(1, response.getAssuntos().size());//Tamanho da lista para verificar se não foi acumulado
+        //assuntoCnjDTO.getNome() = "Direito Civil"
+        assertEquals(assuntoCnjDTO.getNome(), response.getAssuntos().get(0).getNome());//Verifica se o item atual é novo e não o antigo
     }
 }
