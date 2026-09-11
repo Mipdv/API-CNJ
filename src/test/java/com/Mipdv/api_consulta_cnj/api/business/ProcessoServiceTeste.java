@@ -8,6 +8,7 @@ import com.Mipdv.api_consulta_cnj.infrastructure.Client.CnjClient;
 import com.Mipdv.api_consulta_cnj.infrastructure.dtoRequest.ProcessoDTORequest;
 import com.Mipdv.api_consulta_cnj.infrastructure.dtoResponse.*;
 import com.Mipdv.api_consulta_cnj.infrastructure.entity.Assunto;
+import com.Mipdv.api_consulta_cnj.infrastructure.entity.Movimento;
 import com.Mipdv.api_consulta_cnj.infrastructure.entity.Processo;
 import com.Mipdv.api_consulta_cnj.infrastructure.exceptions.ConflictException;
 import com.Mipdv.api_consulta_cnj.infrastructure.repository.assuntoRepository;
@@ -53,6 +54,7 @@ public class ProcessoServiceTeste {
     private HitDTO hitDTO;
     private HitsWrapperDTO hitsWrapperDTO;
     private AssuntoCnjDTO assuntoCnjDTO;
+    private MovimentoCnjDTO movimentoCNJDTO;
     String numeroBruto;
     String numeroLimpo;
 
@@ -264,5 +266,34 @@ public class ProcessoServiceTeste {
         assertEquals(1, response.getAssuntos().size());//Tamanho da lista para verificar se não foi acumulado
         //assuntoCnjDTO.getNome() = "Direito Civil"
         assertEquals(assuntoCnjDTO.getNome(), response.getAssuntos().get(0).getNome());//Verifica se o item atual é novo e não o antigo
+    }
+
+    @Test
+    void deveSubstituirOMovimentoAnterior(){
+        //Não utiliza movimentoRepository
+        processo.setDataConsulta(LocalDateTime.now().minusHours(25));
+        Movimento movimento = new MovimentoFixture().build(1L, 2, "Senteça", "10/09/2026", processo);
+        processo.setMovimentos(new ArrayList<>(List.of(movimento)));
+        movimentoCNJDTO = new MovimentoCnjDTOFixture().build(3, "Despacho", "10/09/2026");
+        processoCnjDTO = new ProcessoCnjDTOFixture().build(numeroLimpo,
+                "trf5", null, "1", new SistemaDTOFixture().build(1, "PJe"),
+                new ClasseDTOFixture().build(198, "Procedimento Comum"), null,
+                new ArrayList<>(), new ArrayList<>(List.of(movimentoCNJDTO)), "2024-01-10T09:00:00.000Z",
+                "2023-08-15T10:00:00.000Z");
+        hitDTO = new HitDTOFixture().build("hit-1", processoCnjDTO);
+        hitsWrapperDTO = new HitsWrapperDTOFixture().build(new ArrayList<>(List.of(hitDTO)));
+        dataJudResponseDTO = new DataJudResponseDTOFixture().build(2350L, hitsWrapperDTO);
+
+        when(tribunalResolver.resolver(anyString())).thenReturn(tribunalInfo);
+        when(processoRepository.findByNumeroProcesso(numeroLimpo)).thenReturn(Optional.of(processo));
+        when(processoRepository.save(processo)).thenReturn(processo);
+        when(cnjClient.consultar(anyString(), any())).thenReturn(dataJudResponseDTO);
+
+        ProcessoDTOResponse response = processoService.consultarProcesso(numeroBruto);
+
+        assertNotNull(response);
+        assertEquals(1, response.getMovimentos().size());
+        //Confirma que é o novo, e não o antigo
+        assertEquals(movimentoCNJDTO.getNome(), response.getMovimentos().get(0).getNomeDoAto());
     }
 }
